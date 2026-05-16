@@ -13,7 +13,8 @@ class ProjectController extends Controller
 
     public function index()
     {
-        return Project::orderByDesc('year')
+        return Project::with('images')
+            ->orderByDesc('year')
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($project) {
@@ -36,6 +37,8 @@ class ProjectController extends Controller
             'demo_url' => 'nullable|url|max:255',
             'demo_link' => 'nullable|url|max:255',
             'image' => 'nullable|image|max:4096',
+            'images' => 'nullable|array|max:6',
+            'images.*' => 'image|max:4096',
         ]);
 
         $data = $this->normalizeLinksAndMeta($data, true);
@@ -49,12 +52,16 @@ class ProjectController extends Controller
         }
 
         $project = Project::create($data);
+        $this->storeGalleryImages($request, $project);
+        $project->load('images');
 
         return $this->withPresentationFields($project);
     }
 
     public function show(Project $project)
     {
+        $project->load('images');
+
         return $this->withPresentationFields($project);
     }
 
@@ -73,6 +80,8 @@ class ProjectController extends Controller
             'demo_url' => 'nullable|url|max:255',
             'demo_link' => 'nullable|url|max:255',
             'image' => 'nullable|image|max:4096',
+            'images' => 'nullable|array|max:6',
+            'images.*' => 'image|max:4096',
         ]);
 
         $data = $this->normalizeLinksAndMeta($data);
@@ -89,6 +98,8 @@ class ProjectController extends Controller
         }
 
         $project->update($data);
+        $this->storeGalleryImages($request, $project);
+        $project->load('images');
 
         return $this->withPresentationFields($project);
     }
@@ -97,6 +108,9 @@ class ProjectController extends Controller
     {
         if ($project->image) {
             Storage::disk('public')->delete($project->image);
+        }
+        foreach ($project->images as $image) {
+            Storage::disk('public')->delete($image->path);
         }
 
         $project->delete();
@@ -128,9 +142,32 @@ class ProjectController extends Controller
     private function withPresentationFields(Project $project): Project
     {
         $project->image_url = $project->image ? url(Storage::url($project->image)) : null;
+        $galleryImages = $project->relationLoaded('images') ? $project->images : collect();
+        $project->gallery_images = $galleryImages
+            ->map(fn ($image) => [
+                'id' => $image->id,
+                'url' => url(Storage::url($image->path)),
+            ])
+            ->values();
         $project->github_link = $project->github_url;
         $project->demo_link = $project->demo_url;
 
         return $project;
+    }
+
+    private function storeGalleryImages(Request $request, Project $project): void
+    {
+        if (! $request->hasFile('images')) {
+            return;
+        }
+
+        $nextOrder = (int) $project->images()->max('display_order') + 1;
+
+        foreach ($request->file('images') as $index => $image) {
+            $project->images()->create([
+                'path' => $image->store('projects/gallery', 'public'),
+                'display_order' => $nextOrder + $index,
+            ]);
+        }
     }
 }
