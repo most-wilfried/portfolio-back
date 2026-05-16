@@ -31,8 +31,8 @@ class PortfolioProfileController extends Controller
             'whatsapp_number' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:180',
             'phone' => 'nullable|string|max:30',
-            'avatar' => 'nullable|image|max:4096',
-            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:8192',
+            'avatar' => 'nullable|image|max:10240',
+            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:12288',
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -68,8 +68,8 @@ class PortfolioProfileController extends Controller
 
     private function withAvatarUrl(PortfolioProfile $profile): PortfolioProfile
     {
-        $profile->avatar_url = $profile->avatar ? url(Storage::url($profile->avatar)) : null;
-        $profile->cv_url = $profile->cv ? url(Storage::url($profile->cv)) : null;
+        $profile->avatar_url = $this->publicStorageUrl($profile->avatar);
+        $profile->cv_url = $this->publicStorageUrl($profile->cv);
 
         return $profile;
     }

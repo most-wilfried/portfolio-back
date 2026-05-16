@@ -13,7 +13,7 @@ class CertificationController extends Controller
         return Certification::orderByDesc('date')
             ->get()
             ->map(function ($certification) {
-                $certification->file_url = $certification->file ? url(Storage::url($certification->file)) : null;
+                $certification->file_url = $this->publicStorageUrl($certification->file);
                 return $certification;
             });
     }
@@ -25,7 +25,7 @@ class CertificationController extends Controller
             'issuer' => 'required|string|max:180',
             'date' => 'required|date',
             'url' => 'nullable|url|max:255',
-            'file' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:4096',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:12288',
             'description' => 'nullable|string',
         ]);
 
@@ -34,14 +34,14 @@ class CertificationController extends Controller
         }
 
         $certification = Certification::create($data);
-        $certification->file_url = $certification->file ? url(Storage::url($certification->file)) : null;
+        $certification->file_url = $this->publicStorageUrl($certification->file);
 
         return $certification;
     }
 
     public function show(Certification $certification)
     {
-        $certification->file_url = $certification->file ? url(Storage::url($certification->file)) : null;
+        $certification->file_url = $this->publicStorageUrl($certification->file);
 
         return $certification;
     }
@@ -53,7 +53,7 @@ class CertificationController extends Controller
             'issuer' => 'sometimes|required|string|max:180',
             'date' => 'sometimes|required|date',
             'url' => 'nullable|url|max:255',
-            'file' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:4096',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:12288',
             'description' => 'nullable|string',
         ]);
 
@@ -65,7 +65,7 @@ class CertificationController extends Controller
         }
 
         $certification->update($data);
-        $certification->file_url = $certification->file ? Storage::url($certification->file) : null;
+        $certification->file_url = $this->publicStorageUrl($certification->file);
 
         return $certification;
     }

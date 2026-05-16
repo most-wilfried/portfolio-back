@@ -37,9 +37,9 @@ class ProjectController extends Controller
             'github_link' => 'nullable|url|max:255',
             'demo_url' => 'nullable|url|max:255',
             'demo_link' => 'nullable|url|max:255',
-            'image' => 'nullable|image|max:4096',
+            'image' => 'nullable|image|max:10240',
             'images' => 'nullable|array|max:6',
-            'images.*' => 'image|max:4096',
+            'images.*' => 'image|max:10240',
         ]);
 
         $data = $this->normalizeLinksAndMeta($data, true);
@@ -80,9 +80,9 @@ class ProjectController extends Controller
             'github_link' => 'nullable|url|max:255',
             'demo_url' => 'nullable|url|max:255',
             'demo_link' => 'nullable|url|max:255',
-            'image' => 'nullable|image|max:4096',
+            'image' => 'nullable|image|max:10240',
             'images' => 'nullable|array|max:6',
-            'images.*' => 'image|max:4096',
+            'images.*' => 'image|max:10240',
         ]);
 
         $data = $this->normalizeLinksAndMeta($data);
@@ -154,12 +154,12 @@ class ProjectController extends Controller
 
     private function withPresentationFields(Project $project): Project
     {
-        $project->image_url = $project->image ? url(Storage::url($project->image)) : null;
+        $project->image_url = $this->publicStorageUrl($project->image);
         $galleryImages = $project->relationLoaded('images') ? $project->images : collect();
         $project->gallery_images = $galleryImages
             ->map(fn ($image) => [
                 'id' => $image->id,
-                'url' => url(Storage::url($image->path)),
+                'url' => $this->publicStorageUrl($image->path),
             ])
             ->values();
         $project->github_link = $project->github_url;

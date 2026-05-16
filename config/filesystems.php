@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'public_url_override' => env('FILES_PUBLIC_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
