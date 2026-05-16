@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}/images/{image}', [ProjectController::class, 'destroyImage']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
 
     Route::post('/experiences', [ExperienceController::class, 'store']);

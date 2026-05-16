@@ -14,6 +14,7 @@ class Skill extends Model
         'category',
         'level',
         'icon',
+        'color',
         'percentage',
         'display_order',
         'is_active',

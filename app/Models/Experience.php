@@ -16,10 +16,12 @@ class Experience extends Model
         'start_date',
         'end_date',
         'description',
+        'technologies',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'technologies' => 'array',
     ];
 }

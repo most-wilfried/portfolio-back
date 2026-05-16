@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\ProjectImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -116,6 +117,18 @@ class ProjectController extends Controller
         $project->delete();
 
         return response()->json(['message' => 'Projet supprimé.']);
+    }
+
+    public function destroyImage(Project $project, ProjectImage $image)
+    {
+        abort_unless($image->project_id === $project->id, 404);
+
+        Storage::disk('public')->delete($image->path);
+        $image->delete();
+
+        $project->load('images');
+
+        return $this->withPresentationFields($project);
     }
 
     private function normalizeLinksAndMeta(array $data, bool $withDefaults = false): array

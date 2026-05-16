@@ -21,7 +21,10 @@ class ExperienceController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date',
             'description' => 'nullable|string',
+            'technologies' => 'nullable',
         ]);
+
+        $data = $this->normalizeTechnologies($data);
 
         return Experience::create($data);
     }
@@ -40,7 +43,10 @@ class ExperienceController extends Controller
             'start_date' => 'sometimes|required|date',
             'end_date' => 'nullable|date',
             'description' => 'nullable|string',
+            'technologies' => 'nullable',
         ]);
+
+        $data = $this->normalizeTechnologies($data);
 
         $experience->update($data);
 
@@ -52,5 +58,16 @@ class ExperienceController extends Controller
         $experience->delete();
 
         return response()->json(['message' => 'Expérience supprimée.']);
+    }
+
+    private function normalizeTechnologies(array $data): array
+    {
+        if (array_key_exists('technologies', $data)) {
+            $data['technologies'] = is_array($data['technologies'])
+                ? array_values(array_filter(array_map('trim', $data['technologies'])))
+                : array_values(array_filter(array_map('trim', explode(',', (string) $data['technologies']))));
+        }
+
+        return $data;
     }
 }
